@@ -41,7 +41,7 @@ object SharkBuild extends Build {
 
   // Hadoop version to build against. For example, "0.20.2", "0.20.205.0", or
   // "1.0.1" for Apache releases, or "0.20.2-cdh3u3" for Cloudera Hadoop.
-  val DEFAULT_HADOOP_VERSION = "1.0.4"
+  val DEFAULT_HADOOP_VERSION = "1.0.3-mapr-3.0.2"
 
   lazy val hadoopVersion = env("SHARK_HADOOP_VERSION") orElse
                            env("SPARK_HADOOP_VERSION") getOrElse
@@ -121,7 +121,7 @@ object SharkBuild extends Build {
     retrieveManaged := true,
     resolvers ++= Seq(
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-      "Cloudera Repository" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
+      "MapR Repository" at "http://repository.mapr.com/maven/",
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
       "Sonatype Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2/",
       "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
@@ -189,7 +189,7 @@ object SharkBuild extends Build {
       "org.apache.spark" %% "spark-core" % SPARK_VERSION,
       "org.apache.spark" %% "spark-repl" % SPARK_VERSION,
       "com.google.guava" % "guava" % "14.0.1",
-      "org.apache.hadoop" % "hadoop-client" % hadoopVersion excludeAll(excludeJackson, excludeNetty, excludeAsm) force(),
+      "org.apache.hadoop" % "hadoop-core" % hadoopVersion excludeAll(excludeJackson, excludeNetty, excludeAsm) force(),
       // See https://code.google.com/p/guava-libraries/issues/detail?id=1095
       "com.google.code.findbugs" % "jsr305" % "1.3.+",
 
