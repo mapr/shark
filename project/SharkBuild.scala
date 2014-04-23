@@ -41,11 +41,16 @@ object SharkBuild extends Build {
 
   // Hadoop version to build against. For example, "0.20.2", "0.20.205.0", or
   // "1.0.1" for Apache releases, or "0.20.2-cdh3u3" for Cloudera Hadoop.
-  val DEFAULT_HADOOP_VERSION = "1.0.3-mapr-3.0.2"
+  val DEFAULT_HADOOP_VERSION = "1.0.3"
+
+  val DEFAULT_MAPR_REPOSITORY = "http://repository.mapr.com/maven/"
 
   lazy val hadoopVersion = env("SHARK_HADOOP_VERSION") orElse
                            env("SPARK_HADOOP_VERSION") getOrElse
                            DEFAULT_HADOOP_VERSION
+
+  lazy val MapRRepository = env("MAVEN_CENTRAL") getOrElse
+			   DEFAULT_MAPR_REPOSITORY
 
   // Whether to build Shark with Yarn support
   val YARN_ENABLED = env("SHARK_YARN").getOrElse("false").toBoolean
@@ -120,8 +125,8 @@ object SharkBuild extends Build {
     // Download managed jars into lib_managed.
     retrieveManaged := true,
     resolvers ++= Seq(
+      "MapR Repository" at MapRRepository,
       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
-      "MapR Repository" at "http://repository.mapr.com/maven/",
       "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
       "Sonatype Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2/",
       "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
