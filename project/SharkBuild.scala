@@ -29,15 +29,18 @@ import sbtassembly.Plugin.AssemblyKeys._
 object SharkBuild extends Build {
 
   // Shark version
-  val SHARK_VERSION = "0.9.0"
+  val SHARK_VERSION = "0.9.1"
 
   val SHARK_ORGANIZATION = "edu.berkeley.cs.shark"
 
-  val HIVE_VERSION = "0.11.0-shark"
+  val HIVE_VERSION = "0.11.0-shark-0.9.1"
 
-  val SPARK_VERSION = "0.9.0-incubating"
+  val SPARK_VERSION = "0.9.1"
 
   val SCALA_VERSION = "2.10.3"
+
+  val SCALAC_JVM_VERSION = "jvm-1.6"
+  val JAVAC_JVM_VERSION = "1.6"
 
   // Hadoop version to build against. For example, "0.20.2", "0.20.205.0", or
   // "1.0.1" for Apache releases, or "0.20.2-cdh3u3" for Cloudera Hadoop.
@@ -57,7 +60,7 @@ object SharkBuild extends Build {
 
   // Whether to build Shark with Tachyon jar.
   val TACHYON_ENABLED = true
-  val TACHYON_VERSION = "0.4.0"
+  val TACHYON_VERSION = "0.4.1"
 
   lazy val root = Project(
     id = "root",
@@ -79,9 +82,12 @@ object SharkBuild extends Build {
   val excludeServlet = ExclusionRule(organization = "javax.servlet")
   val excludeXerces = ExclusionRule(organization = "xerces")
 
+  val scalaArtifacts = Seq("jline", "scala-compiler", "scala-library", "scala-reflect")
+  val scalaDependencies = scalaArtifacts.map ( artifactId =>
+    "org.scala-lang" % artifactId % SCALA_VERSION)
+
   // TODO(harvey): These should really be in a SharkHive project, but that requires re-organizing
-  //               all of our settings. Should be done for v0.9.1. Also, we might not need some
-  //               of these jars.
+  //               all of our settings. Also, we might not need some of these jars.
   val hiveArtifacts = Seq(
     "hive-anttasks",
     "hive-beeline",
@@ -119,7 +125,9 @@ object SharkBuild extends Build {
     organization := SHARK_ORGANIZATION,
     version := SHARK_VERSION,
     scalaVersion := SCALA_VERSION,
-    scalacOptions := Seq("-deprecation", "-unchecked", "-optimize", "-feature", "-Yinline-warnings"),
+    scalacOptions := Seq("-deprecation", "-unchecked", "-optimize", "-feature",
+      "-Yinline-warnings", "-target:" + SCALAC_JVM_VERSION),
+    javacOptions := Seq("-target", JAVAC_JVM_VERSION, "-source", JAVAC_JVM_VERSION),
     parallelExecution in Test := false,
 
     // Download managed jars into lib_managed.
@@ -131,7 +139,7 @@ object SharkBuild extends Build {
       "Sonatype Staging" at "https://oss.sonatype.org/service/local/staging/deploy/maven2/",
       "Local Maven" at Path.userHome.asFile.toURI.toURL + ".m2/repository"
     ),
- 
+
     publishTo <<= version { (v: String) =>
       val nexus = "https://oss.sonatype.org/"
       if (v.trim.endsWith("SNAPSHOT"))
@@ -189,7 +197,7 @@ object SharkBuild extends Build {
     unmanagedJars in Test ++= Seq(
       file(System.getenv("HIVE_DEV_HOME")) / "build" / "ql" / "test" / "classes"
     ),
-    libraryDependencies ++= hiveDependencies ++ tachyonDependency ++ yarnDependency,
+    libraryDependencies ++= hiveDependencies ++ scalaDependencies ++ tachyonDependency ++ yarnDependency,
     libraryDependencies ++= Seq(
       "org.apache.spark" %% "spark-core" % SPARK_VERSION,
       "org.apache.spark" %% "spark-repl" % SPARK_VERSION,

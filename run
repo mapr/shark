@@ -2,7 +2,7 @@
 
 # This file is used to launch Shark on the master.
 export SCALA_VERSION=2.10
-SHARK_VERSION=0.9.0-SNAPSHOT
+SHARK_VERSION=0.9.1-SNAPSHOT
 
 # Figure out where the framework is installed
 FWDIR="$(cd `dirname $0`; pwd)"
@@ -13,32 +13,6 @@ export SHARK_HOME="$FWDIR"
 if [ -e $SHARK_HOME/conf/shark-env.sh ] ; then
   . $SHARK_HOME/conf/shark-env.sh
 fi
-
-if [ "x$SCALA_HOME" == "x" ] ; then
-  echo "No SCALA_HOME specified. Please set SCALA_HOME."
-  exit 1
-fi
-
-if [ ! -f "$SCALA_HOME/lib/scala-library.jar" ] ; then
-  echo "Cannot find $SCALA_HOME/lib/scala-library.jar."
-  echo "Are you sure your SCALA_HOME is set correctly?"
-  echo "SCALA_HOME = $SCALA_HOME"
-  exit 1
-fi
-
-# Hive related section.
-if [ "x$HIVE_HOME" == "x" ] ; then
-    echo "No HIVE_HOME specified. Please set HIVE_HOME."
-    exit 1
-fi
-
-if [ ! -f $HIVE_HOME/lib/hive-exec-0*.jar ] ; then
-  echo "Cannot find $HIVE_HOME/lib/hive-exec-0.9.0.jar."
-  echo "Are you sure your HIVE_HOME is set correctly?"
-  echo "HIVE_HOME = $HIVE_HOME"
-  exit 1
-fi
-
 
 if [ -n "$MASTER" ] ; then
   if [ -z $SPARK_HOME ] ; then
@@ -69,7 +43,7 @@ fi
 
 # Check for optionally specified configuration file path
 if [ "x$HIVE_CONF_DIR" == "x" ] ; then
-    HIVE_CONF_DIR="$HIVE_HOME/conf"
+    HIVE_CONF_DIR="$SHARK_HOME/conf"
 fi
 
 if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
@@ -85,14 +59,6 @@ for jar in `find $SHARK_HOME/lib_managed/jars -name '*jar'`; do
 done
 for jar in `find $SHARK_HOME/lib_managed/bundles -name '*jar'`; do
   SPARK_CLASSPATH+=:$jar
-done
-
-# Add Hive jars.
-for jar in `find $HIVE_HOME/lib -name '*jar'`; do
-  # Ignore the logging library since it has already been included with the Spark jar.
-  if [[ "$jar" != *slf4j* ]]; then
-    SPARK_CLASSPATH+=:$jar
-  fi
 done
 
 SPARK_CLASSPATH+=:$HIVE_CONF_DIR
@@ -158,9 +124,6 @@ export JAVA_OPTS
 export ANT_OPTS=$JAVA_OPTS
 
 if [ "x$RUNNER" == "x" ] ; then
-  CLASSPATH+=":$SCALA_HOME/lib/scala-library.jar"
-  CLASSPATH+=":$SCALA_HOME/lib/scala-compiler.jar"
-  CLASSPATH+=":$SCALA_HOME/lib/jline.jar"
   if [ -n "$JAVA_HOME" ]; then
     RUNNER="${JAVA_HOME}/bin/java"
   else
